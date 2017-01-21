@@ -1,0 +1,184 @@
+import numpy as np
+import math
+import matplotlib.pylab as plt
+import warnings
+import sys
+
+class GeneralModel:
+    def __init__(self, Name="SIR", tstart=0, tend=10, dt=0.01, **params):
+
+        self._Name   = Name
+        self._tstart = tstart
+        self._t      = tstart
+        self._dt     = dt
+        self._tend   = tend
+        self._x      = np.array([])
+        self._dx     = np.array([])
+        self._params = params
+
+        self._Models = {
+            "SIR"       : self.SIRFlow,
+            "VanderPol" : self.VanderPolFlow
+            }
+
+        self._UpdateMethods = {
+            "Euler"      : self.UpdateEuler,
+            "RungeKutta" : self.UpdateRK
+            }
+
+
+    def ShowAvailableModels(self):
+        print self._Models.keys()
+
+    def ShowAvailableUpdateMethods(self):
+        print self._UpdateMethods.keys()
+
+
+    def setFlow(self, Flow):
+
+        if self._Name in self._Models.keys():
+            self.Flow = self._Models[self._Name]
+        else:
+            if Flow == None:
+                raise SystemExit("There is no pre-defined flow method for the "+self._Name+" model. \n \
+                 Please define a flow method and pass it to the simulate method.")
+            else:
+                self.Flow = flow
+
+
+    def setUpdateMethod(self, updatemethod):
+        try:
+            self.Update = self._UpdateMethods[updatemethod]
+        except:
+            print "Update method provided is not known. Check your spelling."
+            print "Using Runge Kutta instead..."
+            self.Update = self.UpdateRK
+
+    def SIRFlow(self, t, state):
+        if len(self._params)==0:
+            beta  = 4
+            gamma = 1
+            N     = 1
+        else:
+            beta  = self._params["beta"]
+            gamma = self._params["gamma"]
+            N     = self._params["N"]
+
+        S, I , R = state[0], state[1], state[2]
+
+        dS = -beta*I*S/N;
+        dI =  beta*I*S/N - gamma*I;
+        dR =  gamma*I;
+
+        return np.array([dS, dI, dR])
+
+
+    def VanderPolFlow(self, t, state):
+        if len(self._params)==0:
+            mu = 0.5
+        else:
+            mu = self._params["mu"]
+        x, y = state[0], state[1]
+
+        dx = y
+        dy = mu*(1-x**2)*y - x
+
+        return np.array([dx, dy])
+
+
+    def UpdateEuler(self):
+        self._dx = self.Flow(self._t, self._x);
+        self._x  = self._x + self._dt*self._dx;
+        self._t  = self._t + self._dt
+
+    def UpdateRK(self):
+        k1 = self.Flow(self._t, self._x)
+        k2 = self.Flow(self._t+self._dt/2, self._x+k1*self._dt/2)
+        k3 = self.Flow(self._t+self._dt/2, self._x+k2*self._dt/2)
+        k4 = self.Flow(self._t+self._dt  , self._x+k2*self._dt)
+
+        self._x = self._x + (k1 + 2*k2 + 2*k3 + k4)*self._dt/6
+        self._t = self._t + self._dt
+
+    def Initialize(self,x):
+        self._x  = np.array(x)
+        #self._dx = np.array(self.Flow(self._t, self._x))
+
+        self._Time = np.arange(self._tstart,self._tend,self._dt);
+
+        self._dim = len(self._x)
+
+        self._XX  = np.zeros((len(self._Time),len(self._x)));
+        self._dXX = np.zeros((len(self._Time),len(self._dx)));
+
+    def Simulate(self, Flow=None, UpdateMethod="RungeKutta"):
+        self.setUpdateMethod(UpdateMethod)
+        self.setFlow(Flow)
+
+        for ii in range(len(self._Time)):
+            self._XX[ii,:] = self._x;
+            self._dXX[ii,:] = self._dx;
+            self.Update();
+
+    def PlotState(self, fignum=1, states=[],legend=[],colors=[]):
+
+        if len(states) == 0:
+            warnings.warn("No state variables specified. Plotting all.")
+            statesymbols = np.arange(self._dim)
+        if len(colors) == 0:
+            colors = [[float(self._dim-x)/self._dim,
+                       np.mod(float(self._dim-x)/self._dim - 0.5,1),
+                       np.mod(float(self._dim-x)/self._dim,1)]
+                       for x in np.arange(self._dim)]
+
+        if states == "All":
+            numplots = self._p
+        else:
+            numplots = len(states)
+
+        stateind = states.keys();
+
+        plt.figure(fignum)
+        plt.suptitle("Time Evolution of the "+self._Name+" Model")
+        for i in xrange(numplots):
+            if len(legend)==0:
+                plt.subplot(numplots,1,i+1)
+                plt.xlabel("Time")
+                plt.ylabel(states[stateind[i]])
+                ps = plt.plot(self._Time,self._XX[:,stateind[i]-1])
+            else:
+                ps = plt.plot(self._Time,self._XX[:,stateind[i]-1],
+                        label="{}".format(legend[i]))
+
+            plt.setp(ps, 'Color', colors[i], 'linewidth', 3)
+            plt.grid(True)
+
+        if len(legend)!=0:
+            plt.xlabel("Time")
+            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+        plt.show()
+
+    def PlotPhase(self, fignum=2, states={1:"x",2:"y"},color="k"):
+        if len(states) == 0:
+            warnings.warn("No state variables specified. Plotting all.")
+            statesymbols = np.arange(self._dim)
+
+        stateind = states.keys();
+        plt.figure(fignum)
+        plt.suptitle("Phase Plot of the "+self._Name+" Model")
+        ps = plt.plot(self._XX[:,stateind[0]-1],self._XX[:,stateind[1]-1])
+        plt.setp(ps, 'Color', color, 'linewidth', 3)
+        plt.xlabel(states.values()[0])
+        plt.ylabel(states.values()[1])
+        plt.grid(True)
+
+        plt.show()
+
+
+if __name__ == "__main__":
+    sir = SIR(0,8,.01,.8,1.2,100);
+    sir.Initialize(999,1,0);
+    sir.Simulate();
+    sir.PlotSIR(1)
+    plt.show()
