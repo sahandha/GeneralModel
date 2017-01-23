@@ -39,11 +39,11 @@ class GeneralModel:
     def KuramotoFlow(self, t, x, params):
         k   = params["k"]
         dx = np.zeros(len(x))
-        self._x = np.mod(x, 2*np.pi)
-        x = self._x
-        for ii in xrange(len(x)/2):
+        N = len(x)/2
+
+        for ii in xrange(N):
             dx[ii] = params["w_{}".format(ii)] + k * np.sum([np.sin(tj-x[ii]) for tj in x])
-        for ii in xrange(len(x)/2,len(x)):
+        for ii in xrange(N,2*N):
             dx[ii] = 0
         return dx
 
@@ -131,27 +131,35 @@ class GeneralModel:
                 plt.subplot(2*numplots,1,i+1)
                 ps = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]))
+                plt.grid(True)
+                plt.ylabel(statelabels[0])
 
                 plt.subplot(2*numplots,1,i+2)
                 ps = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]))
+                plt.ylabel(statelabels[1])
+                plt.grid(True)
             else:
                 plt.subplot(2,1,1)
                 ps1 = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
+                plt.grid(True)
+                plt.ylabel(statelabels[0])
                 plt.subplot(2,1,2)
                 ps2 = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
+                plt.grid(True)
+                plt.ylabel(statelabels[1])
 
 
             plt.setp(ps1, 'Color', colors[i], 'linewidth', 3)
             plt.setp(ps2, 'Color', colors[i], 'linewidth', 3)
-            plt.grid(True)
+
 
 
         if len(legend)!=0:
             plt.xlabel("Time")
-            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            plt.legend(loc='center left', bbox_to_anchor=(1, 1.1))
 
 
         if releaseplot:
