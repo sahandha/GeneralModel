@@ -116,49 +116,52 @@ class GeneralModel:
             colors = colors = [[np.random.uniform(0,1) for _ in range(3)] for _ in np.arange(self._dim)]
 
         if states == "All":
-            numplots = self._d
+            numplots = self._dim/2
         else:
-            numplots = len(legend)
+            if len(legend) !=0 :
+                numplots = len(legend)
+            else:
+                numplots = self._dim/2
 
         rinds     = states["r"]
         thetainds = states["theta"]
+
 
         plt.figure(fignum)
         plt.suptitle("Time Evolution of the "+self._Name+" Model")
         for i in xrange(numplots):
             if len(legend)==0:
-
                 plt.subplot(2*numplots,1,i+1)
-                ps = plt.plot(self._Time,
+                ps1 = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]))
+                plt.setp(ps1, 'Color', colors[i], 'linewidth', 3)
                 plt.grid(True)
                 plt.ylabel(statelabels[0])
 
                 plt.subplot(2*numplots,1,i+2)
-                ps = plt.plot(self._Time,
+                ps2 = plt.plot(self._Time,
                               self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]))
+                plt.setp(ps2, 'Color', colors[i], 'linewidth', 3)
                 plt.ylabel(statelabels[1])
                 plt.grid(True)
             else:
                 plt.subplot(2,1,1)
+
                 ps1 = plt.plot(self._Time,
-                              self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
+                              self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]))
                 plt.grid(True)
+                plt.setp(ps1, 'Color', colors[i], 'linewidth', 3)
                 plt.ylabel(statelabels[0])
                 plt.subplot(2,1,2)
                 ps2 = plt.plot(self._Time,
-                              self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
+                              self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]))
                 plt.grid(True)
                 plt.ylabel(statelabels[1])
+                plt.setp(ps2, 'Color', colors[i], 'linewidth', 3)
 
 
-            plt.setp(ps1, 'Color', colors[i], 'linewidth', 3)
-            plt.setp(ps2, 'Color', colors[i], 'linewidth', 3)
-
-
-
+        plt.xlabel("Time")
         if len(legend)!=0:
-            plt.xlabel("Time")
             plt.legend(loc='center left', bbox_to_anchor=(1, 1.1))
 
 
