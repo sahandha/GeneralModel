@@ -39,7 +39,7 @@ class GeneralModel:
     def KuramotoFlow(self, t, x, params):
         k   = params["k"]
         dx = np.zeros(len(x))
-        N = len(x)/2
+        N = int(len(x)/2)
 
         for ii in range(N):
             dx[ii] = params["w_{}".format(ii)] + k * np.sum([np.sin(tj-x[ii]) for tj in x])
@@ -62,7 +62,7 @@ class GeneralModel:
             numplots = len(states)
 
 
-        stateind = states.keys();
+        stateind = list(states.keys());
 
 
         plt.figure(fignum)
@@ -95,13 +95,13 @@ class GeneralModel:
             warnings.warn("No state variables specified. Plotting all.")
             statesymbols = np.arange(self._dim)
 
-        stateind = states.keys();
+        stateind = list(states.keys());
         plt.figure(fignum)
         plt.suptitle("Phase Plot of the "+self._Name+" Model")
         ps = plt.plot(self._XX[:,stateind[0]-1],self._XX[:,stateind[1]-1])
         plt.setp(ps, 'Color', color, 'linewidth', 3)
-        plt.xlabel(states.values()[0])
-        plt.ylabel(states.values()[1])
+        plt.xlabel(list(states.values())[0])
+        plt.ylabel(list(states.values())[1])
         plt.grid(True)
 
         if releaseplot:
@@ -148,13 +148,13 @@ class GeneralModel:
                 plt.subplot(2,1,1)
 
                 ps1 = plt.plot(self._Time,
-                              self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]))
+                              self._XX[:,rinds[i]]*np.cos(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
                 plt.grid(True)
                 plt.setp(ps1, 'Color', colors[i], 'linewidth', 3)
                 plt.ylabel(statelabels[0])
                 plt.subplot(2,1,2)
                 ps2 = plt.plot(self._Time,
-                              self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]))
+                              self._XX[:,rinds[i]]*np.sin(self._XX[:,thetainds[i]]),label="{}".format(legend[i]))
                 plt.grid(True)
                 plt.ylabel(statelabels[1])
                 plt.setp(ps2, 'Color', colors[i], 'linewidth', 3)
