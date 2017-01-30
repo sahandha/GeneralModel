@@ -119,9 +119,9 @@ class GeneralModel:
             numplots = self._dim/2
         else:
             if len(legend) !=0 :
-                numplots = len(legend)
+                numplots = int(len(legend))
             else:
-                numplots = self._dim/2
+                numplots = int(self._dim/2)
 
         rinds     = states["r"]
         thetainds = states["theta"]
