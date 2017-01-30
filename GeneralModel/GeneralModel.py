@@ -41,9 +41,9 @@ class GeneralModel:
         dx = np.zeros(len(x))
         N = len(x)/2
 
-        for ii in xrange(N):
+        for ii in range(N):
             dx[ii] = params["w_{}".format(ii)] + k * np.sum([np.sin(tj-x[ii]) for tj in x])
-        for ii in xrange(N,2*N):
+        for ii in range(N,2*N):
             dx[ii] = 0
         return dx
 
@@ -67,7 +67,7 @@ class GeneralModel:
 
         plt.figure(fignum)
         plt.suptitle("Time Evolution of the "+self._Name+" Model")
-        for i in xrange(numplots):
+        for i in range(numplots):
             if len(legend)==0:
                 plt.subplot(numplots,1,i+1)
                 plt.xlabel("Time")
@@ -129,7 +129,7 @@ class GeneralModel:
 
         plt.figure(fignum)
         plt.suptitle("Time Evolution of the "+self._Name+" Model")
-        for i in xrange(numplots):
+        for i in range(numplots):
             if len(legend)==0:
                 plt.subplot(2*numplots,1,i+1)
                 ps1 = plt.plot(self._Time,
@@ -203,15 +203,15 @@ class GeneralModel:
         try:
             self.Update = self._UpdateMethods[updatemethod]
         except:
-            print "Update method provided is not known. Check your spelling."
-            print "Using Runge Kutta instead..."
+            print("Update method provided is not known. Check your spelling.")
+            print("Using Runge Kutta instead...")
             self.Update = self.UpdateRK
 
     def ShowAvailableModels(self):
-        print self._Models.keys()
+        print(self._Models.keys())
 
     def ShowAvailableUpdateMethods(self):
-        print self._UpdateMethods.keys()
+        print(self._UpdateMethods.keys())
 
     def Simulate(self, Flow=None, UpdateMethod="RungeKutta"):
         self.SetUpdateMethod(UpdateMethod)
