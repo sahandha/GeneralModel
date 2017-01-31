@@ -1,3 +1,4 @@
+#! python3
 import numpy as np
 import math
 import matplotlib.pylab as plt
@@ -72,9 +73,9 @@ class GeneralModel:
                 plt.subplot(numplots,1,i+1)
                 plt.xlabel("Time")
                 plt.ylabel(states[stateind[i]])
-                ps = plt.plot(self._Time,self._XX[:,stateind[i]-1])
+                ps = plt.plot(self._Time,self._XX[:,stateind[i]])
             else:
-                ps = plt.plot(self._Time,self._XX[:,stateind[i]-1],
+                ps = plt.plot(self._Time,self._XX[:,stateind[i]],
                         label="{}".format(legend[i]))
 
 
@@ -90,7 +91,7 @@ class GeneralModel:
         if releaseplot:
             plt.show()
 
-    def PlotPhase(self, fignum=2, states={1:"x",2:"y"},color="k",releaseplot=True):
+    def PlotPhase(self, fignum=2, states={0:"x",1:"y"},color="k",releaseplot=True):
         if len(states) == 0:
             warnings.warn("No state variables specified. Plotting all.")
             statesymbols = np.arange(self._dim)
@@ -98,7 +99,7 @@ class GeneralModel:
         stateind = list(states.keys());
         plt.figure(fignum)
         plt.suptitle("Phase Plot of the "+self._Name+" Model")
-        ps = plt.plot(self._XX[:,stateind[0]-1],self._XX[:,stateind[1]-1])
+        ps = plt.plot(self._XX[:,stateind[0]],self._XX[:,stateind[1]])
         plt.setp(ps, 'Color', color, 'linewidth', 3)
         plt.xlabel(list(states.values())[0])
         plt.ylabel(list(states.values())[1])
@@ -116,7 +117,7 @@ class GeneralModel:
             colors = colors = [[np.random.uniform(0,1) for _ in range(3)] for _ in np.arange(self._dim)]
 
         if states == "All":
-            numplots = self._dim/2
+            numplots = int(self._dim/2)
         else:
             if len(legend) !=0 :
                 numplots = int(len(legend))
@@ -218,9 +219,7 @@ class GeneralModel:
         self.SetFlow(Flow)
         self._dx = np.array(self.Flow(self._t, self._x, self._params))
         for ii in range(len(self._Time)):
-            self._XX[ii,:] = self._x;
-            self._dXX[ii,:] = self._dx;
-            self.Update();
+            self.Update(ii);
 
     def SIRFlow(self, t, state, params):
         if len(self._params)==0:
@@ -237,12 +236,18 @@ class GeneralModel:
         dR =  gamma*I
         return np.array([dS, dI, dR])
 
-    def UpdateEuler(self):
+    def UpdateEuler(self,ii):
+        self._XX[ii,:] = self._x;
+        self._dXX[ii,:] = self._dx;
+
         self._dx = self.Flow(self._t, self._x, self._params);
         self._x  = self._x + self._dt*self._dx;
         self._t  = self._t + self._dt
 
-    def UpdateRK(self):
+    def UpdateRK(self,ii):
+        self._XX[ii,:] = self._x;
+        self._dXX[ii,:] = self._dx;
+
         k1 = self.Flow(self._t, self._x, self._params)
         k2 = self.Flow(self._t+self._dt/2, self._x+k1*self._dt/2,  self._params)
         k3 = self.Flow(self._t+self._dt/2, self._x+k2*self._dt/2,  self._params)
