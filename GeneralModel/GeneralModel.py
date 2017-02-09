@@ -190,7 +190,7 @@ class GeneralModel:
             plt.show()
 
     def SetFlow(self, Flow):
-        if self._Name in self._Models.keys():
+        if Flow in list(self._Models.keys()):
             self.Flow = self._Models[self._Name]
         else:
             if Flow == None:
@@ -275,5 +275,5 @@ if __name__ == "__main__":
     VDP = GeneralModel(Name="VanderPol", tstart=0, tend=50, dt=0.01)
     VDP.Initialize([0.9,0.1])
     VDP.Simulate()
-    VDP.PlotState(fignum=1,states={1:"x",2:"y"},releaseplot=False)
+    VDP.PlotState(fignum=1,states={0:"x",1:"y"},releaseplot=False)
     VDP.PlotPhase(fignum=2,color=[0.4,0.7,0.9])
