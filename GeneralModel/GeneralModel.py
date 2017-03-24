@@ -14,8 +14,8 @@ class GeneralModel:
         self._t      = tstart
         self._dt     = dt
         self._tend   = tend
-        self._x      = np.array([])
-        self._dx     = np.array([])
+        self._X      = np.array([])
+        self._dX     = np.array([])
         self._params = params
 
         self._Models = {
@@ -30,12 +30,12 @@ class GeneralModel:
             }
 
     def Initialize(self,x):
-        self._x  = np.array(x)
-        self._dx  = np.zeros_like(self._x)
+        self._X  = np.array(x)
+        self._dX  = np.zeros_like(self._X)
         self._Time = np.arange(self._tstart,self._tend,self._dt)
-        self._dim = len(self._x)
-        self._XX  = np.zeros((len(self._Time),len(self._x)))
-        self._dXX = np.zeros((len(self._Time),len(self._dx)))
+        self._dim = len(self._X)
+        self._XX  = np.zeros((len(self._Time),len(self._X)))
+        self._dXX = np.zeros((len(self._Time),len(self._dX)))
 
     def KuramotoFlow(self, t, x, params):
         k   = params["k"]
@@ -84,7 +84,7 @@ class GeneralModel:
 
 
         if len(legend)!=0:
-            plt.xlabel("Time")
+            plt.xlabel("Time (Seconds)")
             plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 
@@ -217,7 +217,7 @@ class GeneralModel:
     def Simulate(self, Flow=None, UpdateMethod="RungeKutta"):
         self.SetUpdateMethod(UpdateMethod)
         self.SetFlow(Flow)
-        self._dx = np.array(self.Flow(self._t, self._x, self._params))
+        self._dX = np.array(self.Flow(self._t, self._X, self._params))
         for ii in range(len(self._Time)):
             self.Update(ii);
 
@@ -237,23 +237,23 @@ class GeneralModel:
         return np.array([dS, dI, dR])
 
     def UpdateEuler(self,ii):
-        self._XX[ii,:] = self._x;
-        self._dXX[ii,:] = self._dx;
+        self._XX[ii,:] = self._X;
+        self._dXX[ii,:] = self._dX;
 
-        self._dx = self.Flow(self._t, self._x, self._params);
-        self._x  = self._x + self._dt*self._dx;
+        self._dX = self.Flow(self._t, self._X, self._params);
+        self._X  = self._X + self._dt*self._dX;
         self._t  = self._t + self._dt
 
     def UpdateRK(self,ii):
-        self._XX[ii,:] = self._x;
-        self._dXX[ii,:] = self._dx;
+        self._XX[ii,:] = self._X;
+        self._dXX[ii,:] = self._dX;
 
-        k1 = self.Flow(self._t, self._x, self._params)
-        k2 = self.Flow(self._t+self._dt/2, self._x+k1*self._dt/2,  self._params)
-        k3 = self.Flow(self._t+self._dt/2, self._x+k2*self._dt/2,  self._params)
-        k4 = self.Flow(self._t+self._dt  , self._x+k2*self._dt  ,  self._params)
+        k1 = self.Flow(self._t, self._X, self._params)
+        k2 = self.Flow(self._t+self._dt/2, self._X+k1*self._dt/2,  self._params)
+        k3 = self.Flow(self._t+self._dt/2, self._X+k2*self._dt/2,  self._params)
+        k4 = self.Flow(self._t+self._dt  , self._X+k2*self._dt  ,  self._params)
 
-        self._x = self._x + (k1 + 2*k2 + 2*k3 + k4)*self._dt/6
+        self._X = self._X + (k1 + 2*k2 + 2*k3 + k4)*self._dt/6
         self._t = self._t + self._dt
 
     def VanderPolFlow(self, t, state, params):
