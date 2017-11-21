@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='GeneralModel',
-    version='0.1',
+    version='0.2',
     description='A quick prototyping module for  ODE model simulation',
     url='http://github.com/sahandha/GeneralModel',
     author='Sahand Hariri',
